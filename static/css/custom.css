@@ -1,0 +1,13 @@
+/* Custom CSS to resize the logo in the admin interface */
+.brand-link .brand-image {
+    width: 30px; /* Adjust as needed */
+    height: auto; /* Maintain aspect ratio */
+    max-height: 50px; /* Set a max height */
+}
+
+/* Custom CSS to resize the logo on the login page */
+.login-logo img {
+    width: 150px; /* Adjust as needed */
+    height: auto; /* Maintain aspect ratio */
+    max-height: 100px; /* Set a max height */
+}
