@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Django CRM Project - Contact Management Project 
 
 ## Live Demo - http://professionalcipher.pythonanywhere.com/ 
@@ -15,3 +16,6 @@ I am trying to create a Tutorial on How yo Create CRM or Contact Management Syst
 5. Run the Application - `python manage.py runserver`
 6. Migrate
 
+=======
+# CRM_23_08
+>>>>>>> b0dcb92b30a8f3ad93b1e8e5d4165a93173f0d06
