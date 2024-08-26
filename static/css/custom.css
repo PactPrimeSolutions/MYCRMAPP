@@ -10,6 +10,7 @@
     width: 20px; /* Adjust as needed */
     height: auto; /* Maintain aspect ratio */
     max-height: 30px; /* Set a max height */
+<<<<<<< HEAD
 }
 
 /* Custom styles for the form */
@@ -31,4 +32,6 @@ h2 {
 .btn-success {
     background-color: #28a745;
     border-color: #28a745;
+=======
+>>>>>>> c3c4bbe181758c1c9a41e6f1351896e9c7ff5b12
 }
