@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM Dashboard with State and County Selection</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- FontAwesome for Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css" rel="stylesheet">
+    
+    <!-- Custom styles -->
+    <style>
+        body {
+            display: flex;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+        .sidebar {
+            width: 250px;
+            background-color: #343a40;
+            color: #ffffff;
+            padding: 15px;
+            position: fixed;
+            height: 100%;
+        }
+        .sidebar a {
+            color: #ffffff;
+            text-decoration: none;
+            padding: 10px 15px;
+            display: block;
+        }
+        .sidebar a:hover {
+            background-color: #495057;
+        }
+        .content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+        .table-responsive {
+            margin-top: 20px;
+        }
+        select {
+            display: block;
+            width: 300px;
+            padding: 10px;
+            margin: 15px auto;
+            border-radius: 5px;
+            border: 1px solid #333;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h4>CRM Menu</h4>
+        <a href="#"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+        <a href="{% url 'client_list' %}"><i class="fas fa-address-book"></i> Clients</a>
+        <a href="#"><i class="fas fa-user"></i> Projects</a>
+        <a href="#"><i class="fas fa-sign-out-alt"></i> Logout</a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+        <div class="container-fluid">
+            <!-- Page Heading -->
+            <div class="d-sm-flex align-items-center justify-content-between mb-4 mt-4">
+                <h1>Select State and County</h1>
+            </div>
+
+            <!-- State and County Dropdowns -->
+            <div class="container">
+                <select name="state" id="stateSelect">
+                    <option value="">Select State</option>
+                    <!-- States will be dynamically populated -->
+                </select>
+
+                <select name="county" id="countySelect" disabled>
+                    <option value="">Select County</option>
+                    <!-- Counties will be dynamically populated based on state -->
+                </select>
+            </div>
+
+            <!-- Display Business Details -->
+            <h3 class="mt-5">Business Details</h3>
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>SL</th>
+                            <th>Batch Type</th>
+                            <th>Order No</th>
+                            <th>Received On</th>
+                            <th>Borrower Name 1</th>
+                            <th>Borrower Name 2</th>
+                            <th>Loan Amount</th>
+                            <th>Status</th>
+                            <th>Completed On</th>
+                            <th>State</th>
+                            <th>County</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for detail in base %}
+                        <tr>
+                            <td>{{ detail.sl }}</td>
+                            <td>{{ detail.batch_type }}</td>
+                            <td>{{ detail.order_no }}</td>
+                            <td>{{ detail.received_on }}</td>
+                            <td>{{ detail.borrower_name_1 }}</td>
+                            <td>{{ detail.borrower_name_2 }}</td>
+                            <td>${{ detail.loan_amount|floatformat:2 }}</td>
+                            <td>{{ detail.get_status_display }}</td>
+                            <td>{{ detail.completed_on }}</td>
+                            <td>{{ detail.state }}</td>
+                            <td>{{ detail.county }}</td>
+
+                            <td>
+                                <a href="{% url 'delete_business_detail' detail.pk %}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this business detail?');">Remove</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Download Excel -->
+            <div class="form-group row">
+                <div class="col-sm-10 offset-sm-2">
+                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#downloadModal">
+                        Download Excel
+                    </button>
+                    
+                    <!-- Modal -->
+                    <div class="modal fade" id="downloadModal" tabindex="-1" aria-labelledby="downloadModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="downloadModalLabel">Download Business Details</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="downloadForm" method="POST" action="{% url 'download_excel' %}">
+                                        {% csrf_token %}
+                                        <div class="mb-3">
+                                            <label for="downloadOption" class="form-label">Choose Download Option</label>
+                                            <select class="form-select" id="downloadOption" name="download_option" required>
+                                                <option value="all">Download All</option>
+                                                <option value="year">By Year</option>
+                                                <option value="month">By Month</option>
+                                                <option value="date_range">By Date Range</option>
+                                            </select>
+                                        </div>
+                    
+                                        <div class="mb-3" id="yearSelect" style="display:none;">
+                                            <label for="year" class="form-label">Select Year</label>
+                                            <input type="number" class="form-control" id="year" name="year" min="2000" max="{{ current_year }}">
+                                        </div>
+                    
+                                        <div class="mb-3" id="monthSelect" style="display:none;">
+                                            <label for="month" class="form-label">Select Month</label>
+                                            <input type="month" class="form-control" id="month" name="month">
+                                        </div>
+                    
+                                        <div class="mb-3" id="dateRangeSelect" style="display:none;">
+                                            <label for="startDate" class="form-label">Start Date</label>
+                                            <input type="date" class="form-control" id="startDate" name="start_date">
+                                            <label for="endDate" class="form-label">End Date</label>
+                                            <input type="date" class="form-control" id="endDate" name="end_date">
+                                        </div>
+                    
+                                        <button type="submit" class="btn btn-primary">Download</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- State and County JavaScript -->
+    <script>
+        window.onload = function() {
+            const stateSelect = document.getElementById('stateSelect');
+            const countySelect = document.getElementById('countySelect');
+    
+            // Event listener for state dropdown change
+            stateSelect.onchange = function() {
+                const stateId = this.value;
+    
+                // Reset county dropdown and disable it
+                countySelect.length = 1;  // Keep the 'Select County' option
+                countySelect.disabled = true;
+    
+                if (stateId) {
+                    // Fetch counties from backend
+                    fetch(`/load_counties/${stateId}/`)  // Adjust the route if necessary
+                        .then(response => response.json())
+                        .then(data => {
+                            // Populate county dropdown
+                            data.forEach(county => {
+                                let option = new Option(county.name, county.id);
+                                countySelect.add(option);
+                            });
+    
+                            // Enable the county dropdown
+                            countySelect.disabled = false;
+                        })
+                        .catch(error => {
+                            console.error('Error fetching counties:', error);
+                            alert('Failed to load counties. Please try again later.');
+                        });
+                }
+            };
+        };
+    </script>
+    
+
+</body>
+</html>
